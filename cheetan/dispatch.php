@@ -4,12 +4,12 @@ cheetan is licensed under the MIT license.
 copyright (c) 2006 cheetan all right reserved.
 http://php.cheetan.net/
 -----------------------------------------------------------------------------*/
-class CDispatch extends CObject
-{
-	function dispatch( &$data )
-	{
+class CDispatch {
+
+	public function dispatch() {
+
 		$db			= new CDatabase();
-		if( function_exists( "config_database" ) )
+		if( function_exists( 'config_database' ) )
 		{
 			config_database( $db );
 		}
@@ -42,7 +42,6 @@ class CDispatch extends CObject
 			session_start();
 		}
 
-		$this->_check_secure( $controller );
 
 		if( function_exists( "config_controller" ) )
 		{
@@ -85,22 +84,6 @@ class CDispatch extends CObject
 			after_render( $controller );
 		}
 
-		$data		= $variable;
 		return $controller;
-	}
-
-
-	function _check_secure( $controller )
-	{
-		if( function_exists( "is_secure" ) )
-		{
-			if( is_secure( $controller ) )
-			{
-				if( function_exists( "check_secure" ) )
-				{
-					check_secure( $controller );
-				}
-			}
-		}
 	}
 }

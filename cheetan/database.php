@@ -9,7 +9,7 @@ define( "DBKIND_PGSQL", "1" );
 define( "DBKIND_TEXTSQL", "2" );
 
 
-class CDatabaseConfig extends CObject
+class CDatabaseConfig
 {
 	var	$host;
 	var	$user;
@@ -20,7 +20,7 @@ class CDatabaseConfig extends CObject
 }
 
 
-class CDatabase extends CObject
+class CDatabase
 {
 	var	$config			= array();
 	var $connection		= array();

@@ -4,7 +4,7 @@ cheetan is licensed under the MIT license.
 copyright (c) 2006 cheetan all right reserved.
 http://php.cheetan.net/
 -----------------------------------------------------------------------------*/
-class CDBCommon extends CObject
+class CDBCommon
 {
 	var $last_insert_id	= null;
 	var $affected_rows	= null;

@@ -4,7 +4,7 @@ cheetan is licensed under the MIT license.
 copyright (c) 2006 cheetan all right reserved.
 http://php.cheetan.net/
 -----------------------------------------------------------------------------*/
-class CSanitize extends CObject
+class CSanitize
 {
 	function html( $data )
 	{
