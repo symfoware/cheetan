@@ -22,12 +22,12 @@ require_once(LIBDIR . DIRECTORY_SEPARATOR . 'db' . DIRECTORY_SEPARATOR . 'pgsql.
 define( 'SCRIPTFILE', basename( $_SERVER['SCRIPT_FILENAME'] ) );
 
 
-//$data		= [];
-//$sanitize	= new CSanitize();
-//$s			= $sanitize;
+//$data  = [];
+//$sanitize = new CSanitize();
+//$s   = $sanitize;
 
-$dispatch	= new CDispatch();
-$controller	= $dispatch->dispatch();
-$c			= &$controller;
+$dispatch = new CDispatch();
+$controller = $dispatch->dispatch();
+$c = &$controller;
 
 $data = $controller->GetVariable();
