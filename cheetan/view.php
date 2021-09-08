@@ -14,28 +14,28 @@ class CView {
     private $debug = false;
     
     
-    public function SetFile( $template, $viewfile ) {
+    public function setFile( $template, $viewfile ) {
         $this->template = $template;
         $this->viewfile = $viewfile;
     }
     
     
-    public function SetVariable( &$variable ) {
+    public function setVariable( &$variable ) {
         $this->variables = $variable;
     }
 
 
-    public function SetSanitize( &$sanitize ) {
+    public function setSanitize( &$sanitize ) {
         $this->sanitize = $sanitize;
     }
     
     
-    public function SetController( &$controller ) {
+    public function setController( &$controller ) {
         $this->controller = $controller;
     }
     
     
-    public function SetSqlLog( $sqllog ) {
+    public function setSqlLog( $sqllog ) {
         if( $this->debug ) {
             $log    = '<table class="cheetan_sql_log">'
                     . '<tr>'
@@ -66,7 +66,7 @@ class CView {
     }
     
     
-    public function SetDebug( $debug ) {
+    public function setDebug( $debug ) {
         $this->debug = $debug;
     }
     

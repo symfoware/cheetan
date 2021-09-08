@@ -13,9 +13,7 @@ class CController {
     private $variables = [];
     private $db;
     private $sanitize;
-    private $s;
     private $validate;
-    private $v;
 
     // Models Array
     private $m = [];
@@ -29,7 +27,7 @@ class CController {
     private $debug = false;
     
     
-    public function AddModel( $path, $name = '' ) {
+    public function addModel( $path, $name = '' ) {
         $cname = basename( $path, '.php' );
         $cname = strtolower( $cname );
         if( !$name ) {
@@ -38,7 +36,7 @@ class CController {
         
         $cname = 'C' . ucfirst( $name );
         if( !file_exists( $path ) ) {
-            return FALSE;
+            return false;
 
         } else {
             require_once( $path );
@@ -47,18 +45,18 @@ class CController {
                 $class->table = $name;
             }
             
-            $class->SetController( $this );
+            $class->setController( $this );
             $this->m[$name]    = &$class;
             if( empty( $this->{$name} ) ) {
                 $this->{$name} = &$this->m[$name];
             }
         }
 
-        return TRUE;
+        return true;
     }
     
     
-    public function AddComponent( $path, $cname = '', $name = '' ) {
+    public function addComponent( $path, $cname = '', $name = '' ) {
 
         if( !$cname ) {
             $cname = basename( $path, '.php' );
@@ -75,7 +73,7 @@ class CController {
 
         if( !file_exists( $path ) ) {
             print 'Component file $path is not exist.';
-            return FALSE;
+            return false;
         } else {
             require_once( $path );
             $class = new $cname();
@@ -84,46 +82,46 @@ class CController {
                 $this->{$name} = &$this->c[$name];            
             }
         }
-        return TRUE;
+        return true;
     }
     
     
-    public function SetTemplateFile( $template ) {
+    public function setTemplateFile( $template ) {
         $this->template = $template;
     }
     
     
-    public function SetViewFile( $viewfile ) {
+    public function setViewFile( $viewfile ) {
         $this->viewfile = $viewfile;
     }
     
     
-    public function SetViewPath( $viewpath ) {
+    public function setViewPath( $viewpath ) {
         $this->viewpath = $viewpath;
     }
     
     
-    public function SetViewExt( $ext ) {
-        if( $ext{0} != '.' ) {
+    public function setViewExt( $ext ) {
+        if( $ext[0] != '.' ) {
             $ext = '.' . $ext;
         }
         $this->viewfile_ext = $ext;
     }
     
     
-    public function GetTemplateFile() {
+    public function getTemplateFile() {
         return $this->template;
     }
     
     
-    public function GetViewFile() {
+    public function getViewFile() {
         if( $this->viewfile )
         {
             return $this->viewfile;
         }
         
         $pos = strpos( SCRIPTFILE, '.' );
-        if( $pos === FALSE ) {
+        if( $pos === false ) {
             return SCRIPTFILE . $this->viewfile_ext;
         }
         if( !$pos ) {
@@ -155,14 +153,14 @@ class CController {
     }
     
     
-    public function setarray( $datas ) {
+    public function setArray( $datas ) {
         foreach( $datas as $key => $data ) {
             $this->set( $key, $data );
         }
     }
 
 
-    public function redirect( $url, $is301 = FALSE ) {
+    public function redirect( $url, $is301 = false ) {
         if( $is301 ) {
             header( 'HTTP/1.1 301 Moved Permanently' );
         }
@@ -171,7 +169,7 @@ class CController {
     }
     
     
-    public function RequestHandle() {
+    public function requestHandle() {
         if( count( $_GET ) ) {
             $this->get = $_GET;
         }
@@ -181,14 +179,14 @@ class CController {
         if( count( $_REQUEST ) ) {
             $this->request = $_REQUEST;
         }
-        $this->ModelItemHandle( $_GET );
-        $this->ModelItemHandle( $_POST );
+        $this->modelItemHandle( $_GET );
+        $this->modelItemHandle( $_POST );
     }
     
     
-    public function ModelItemHandle( $requests ) {
+    public function modelItemHandle( $requests ) {
         foreach( $requests as $key => $request ) {
-            if( strpos( $key, '/' ) !== FALSE ) {
+            if( strpos( $key, '/' ) !== false ) {
                 list( $model, $element ) = explode( '/', $key );
                 $this->data[$model][$element] = $request;
             }
@@ -196,44 +194,42 @@ class CController {
     }
     
     
-    public function GetVariable() {
+    public function getVariable() {
         return $this->variables;
     }
     
     
-    public function &GetDatabase() {
+    public function &getDatabase() {
         return $this->db;
     }
     
     
-    public function SetDatabase( &$db ) {
+    public function setDatabase( &$db ) {
         $this->db = $db;
     }
 
 
-    public function SetSanitize( &$sanitize ) {
+    public function setSanitize( &$sanitize ) {
         $this->sanitize = $sanitize;
-        $this->s = &$this->sanitize;
     }
 
 
-    public function SetValidate( &$validate ) {
+    public function setValidate( &$validate ) {
         $this->validate = $validate;
-        $this->v = &$this->validate;
     }
     
     
-    public function SetDebug( $debug ) {
+    public function setDebug( $debug ) {
         $this->debug = $debug;
     }
     
     
-    public function GetDebug() {
+    public function getDebug() {
         return $this->debug;
     }
     
     
-    public function GetSqlLog() {
+    public function getSqlLog() {
         return $this->db->GetSqlLog();
     }
 }

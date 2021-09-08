@@ -16,13 +16,13 @@ class CModel {
     private $validateresult = [];
         
     
-    public function SetController( &$controller ) {
+    public function setController( &$controller ) {
         $this->controller = &$controller;
         $this->db = &$controller->db;
     }
     
     
-    public function SetDatabase( &$db ) {
+    public function setDatabase( &$db ) {
         $this->db = $db;
     }
     
@@ -32,39 +32,39 @@ class CModel {
     }
     
     
-    public function findquery( $query, $condition = '', $order = '', $limit = '', $group = '' ) {
-        return $this->db->findquery( $query, $condition, $order, $limit, $group, $this->name );
+    public function findQuery( $query, $condition = '', $order = '', $limit = '', $group = '' ) {
+        return $this->db->findQuery( $query, $condition, $order, $limit, $group, $this->name );
     }
 
 
     public function find($condition = null, $order = '', $limit = '', $group = '') {
-        return $this->db->findall($this->table, $condition, $order, $limit, $group, $this->name);
+        return $this->db->findAll($this->table, $condition, $order, $limit, $group, $this->name);
     }
     
     
-    public function findone($condition = null, $order = '') {
+    public function findOne($condition = null, $order = '') {
         $result = $this->find($condition, $order, 1);
         if(count($result)) {
             return $result[0];
         }
-        return FALSE;
+        return false;
     }
     
     
-    public function findby( $field, $value, $order = '', $limit = '' ) {
-        $condition = $this->db->CreateCondition( $field, $value, $this->name );
+    public function findBy( $field, $value, $order = '', $limit = '' ) {
+        $condition = $this->db->createCondition( $field, $value, $this->name );
         return $this->find( $condition, $order, $limit );
     }
     
     
-    public function findoneby( $field, $value, $order = '' ) {
-        $condition = $this->db->CreateCondition( $field, $value, $this->name );
-        return $this->findone( $condition, $order );
+    public function findOneBy( $field, $value, $order = '' ) {
+        $condition = $this->db->createCondition( $field, $value, $this->name );
+        return $this->findOne( $condition, $order );
     }
     
     
-    public function getcount($condition = null, $limit = '') {
-        return $this->db->getcount($this->table, $condition, $limit, $this->name);
+    public function getCount($condition = null, $limit = '') {
+        return $this->db->getCount($this->table, $condition, $limit, $this->name);
     }
 
 
@@ -73,7 +73,7 @@ class CModel {
     }
 
 
-    public function updateby( $datas, $condition ) {
+    public function updateBy( $datas, $condition ) {
         return $this->db->update( $this->table, $datas, $condition, $this->name );
     }
     
@@ -82,11 +82,11 @@ class CModel {
         if( array_key_exists( $this->id, $datas )) {
             $copy = array_slice( $datas, 0 );
             unset( $copy[$this->id] );
-            $condition = $this->db->CreateCondition( $this->id, $datas[$this->id], $this->name );
-            return $this->updateby( $datas, $condition );
+            $condition = $this->db->createCondition( $this->id, $datas[$this->id], $this->name );
+            return $this->updateBy( $datas, $condition );
         }
         
-        return FALSE;
+        return false;
     }
 
 
@@ -96,7 +96,7 @@ class CModel {
     
     
     public function validate($data) {
-        $ret = TRUE;
+        $ret = true;
         $validater = &$this->controller->validate;
         foreach ($data as $key => $value) {
             if (array_key_exists($key, $this->validatefunc)) {
@@ -115,7 +115,7 @@ class CModel {
                             if (array_key_exists($key, $this->validatemsg) && empty($this->validateresult[$key])) {
                                 $this->validateresult[$key] = $errors[$i];
                             }
-                            $ret = FALSE;
+                            $ret = false;
                         }
                     }
                 }
@@ -155,12 +155,12 @@ class CModel {
     }
     
     
-    public function GetValidateError() {
+    public function getValidateError() {
         return $this->validateresult;
     }
     
     
-    public function to_datetime( $time = '' ) {
+    public function toDateTime( $time = '' ) {
         if( !$time ) {
             $time = time();
         }
@@ -173,18 +173,18 @@ class CModel {
     }
     
     
-    public function GetLastInsertId() {
-        return $this->db->GetLastInsertId( $this->name );
+    public function getLastInsertId() {
+        return $this->db->getLastInsertId( $this->name );
     }
     
     
-    public function GetAffectedRows() {
-        return $this->db->GetAffectedRows( $this->name );
+    public function getAffectedRows() {
+        return $this->db->getAffectedRows( $this->name );
     }
     
     
-    public function GetLastError() {
-        return $this->db->GetLastError( $this->name );
+    public function getLastError() {
+        return $this->db->getLastError( $this->name );
     }
     
     

@@ -38,14 +38,14 @@ class CValidate {
             if( $errmsg ) {
                 return "";
             } else {
-                return TRUE;
+                return true;
             }
 
         } else {
             if( $errmsg ) {
                 return $errmsg;
             } else {
-                return FALSE;
+                return false;
             }
         }
     }

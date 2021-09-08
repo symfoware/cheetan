@@ -1,8 +1,13 @@
 <?php
-/*-----------------------------------------------------------------------------
-cheetan is licensed under the MIT license.
-copyright (c) 2006 cheetan all right reserved.
-http://php.cheetan.net/
+/**----------------------------------------------------------------------------
+ * cheetan Web Framework.
+ * 
+ * The Lightweight PHP Web Framework to Accelerate Development.
+ *
+ * @version 0.9.0-dev
+ * @copyright Copyright 2006 cheetan all right reserved.
+ * @license https://opensource.org/licenses/MIT
+ * @link http://php.cheetan.net/
 -----------------------------------------------------------------------------*/
 define( 'LIBDIR', dirname(__FILE__));
 
@@ -22,12 +27,54 @@ require_once(LIBDIR . DIRECTORY_SEPARATOR . 'db' . DIRECTORY_SEPARATOR . 'pgsql.
 define( 'SCRIPTFILE', basename( $_SERVER['SCRIPT_FILENAME'] ) );
 
 
-//$data  = [];
-//$sanitize = new CSanitize();
-//$s   = $sanitize;
+class Cheetan {
 
-$dispatch = new CDispatch();
-$controller = $dispatch->dispatch();
+    public function dispatch() {
+
+        $db = new CDatabase();
+        if( function_exists( 'config_database' ) ) {
+            config_database( $db );
+        }
+    
+        $sanitize = new CSanitize();
+        $validate = new CValidate();
+        $controller = new CController();
+
+        $controller->requestHandle();
+        $controller->setDatabase( $db );
+        $controller->setSanitize( $sanitize );
+        $controller->setValidate( $validate );
+
+        if( !function_exists( 'is_session' ) || is_session() ) {
+            session_start();
+        }
+
+        if( function_exists( 'action' ) ) {
+            action( $controller );
+        }
+        
+        $template = $controller->getTemplateFile();
+        $viewfile = $controller->getViewFile();
+        $variable = $controller->getVariable();
+        $sqllog = $controller->getSqlLog();
+        $is_debug = $controller->getDebug();
+        
+        $view = new CView();
+        $view->setFile( $template, $viewfile );
+        $view->setVariable( $variable );
+        $view->setSanitize( $sanitize );
+        $view->setController( $controller );
+        $view->setDebug( $is_debug );
+        $view->setSqlLog( $sqllog );
+        $view->display();
+
+        return $controller;
+    }
+}
+
+
+$cheetan = new Cheetan();
+$controller = $cheetan->dispatch();
 $c = &$controller;
 
-$data = $controller->GetVariable();
+$data = $controller->getVariable();

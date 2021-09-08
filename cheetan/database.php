@@ -33,7 +33,7 @@ class CDatabase {
     }
     
     
-    public function &GetDriver( $name ) {
+    public function &getDriver( $name ) {
         if( empty( $this->config[$name] )) {
             return null;
         }
@@ -64,7 +64,7 @@ class CDatabase {
     
     
     public function query( $query, $name = '' ) {
-        $driver    =& $this->GetDriver( $name );
+        $driver    =& $this->getDriver( $name );
         $ret    = $driver->query( $query, $this->connection[$name] );
         if( !$ret )
         {
@@ -75,102 +75,102 @@ class CDatabase {
     }
     
     
-    public function GetFindQuery( $query, $condition = '', $order = '', $limit = '', $group = '' ) {
-        $driver =& $this->GetDriver( $name );
-        return $driver->GetFindQuery( $query, $condition, $order, $limit, $group );
+    public function getFindQuery( $query, $condition = '', $order = '', $limit = '', $group = '' ) {
+        $driver =& $this->getDriver( $name );
+        return $driver->getFindQuery( $query, $condition, $order, $limit, $group );
     }
     
     
-    public function findquery( $query, $condition = '', $order = '', $limit = '', $group = '', $name = '' ) {
-        $driver =& $this->GetDriver( $name );
-        return $driver->findquery( $this->connection[$name], $query, $condition, $order, $limit, $group );
+    public function findQuery( $query, $condition = '', $order = '', $limit = '', $group = '', $name = '' ) {
+        $driver =& $this->getDriver( $name );
+        return $driver->findQuery( $this->connection[$name], $query, $condition, $order, $limit, $group );
     }
     
     
-    public function findall($table, $condition = null, $order = '', $limit = '', $group = '', $name = '') {
-        $driver =& $this->GetDriver( $name );
-        return $driver->findall($this->connection[$name], $table, $condition, $order, $limit, $group);
+    public function findAll($table, $condition = null, $order = '', $limit = '', $group = '', $name = '') {
+        $driver =& $this->getDriver( $name );
+        return $driver->findAll($this->connection[$name], $table, $condition, $order, $limit, $group);
     }
     
     
     public function find( $query, $name = '' ) {
-        $driver =& $this->GetDriver( $name );
+        $driver =& $this->getDriver( $name );
         return $driver->find( $query, $this->connection[$name] );
     }
     
     
     public function count( $query, $name = '' ) {
-        $driver =& $this->GetDriver( $name );
+        $driver =& $this->getDriver( $name );
         return $driver->count( $query, $this->connection[$name] );
     }
     
     
     public function insert( $table, $datas, $name = '' )
     {
-        $driver =& $this->GetDriver( $name );
+        $driver =& $this->getDriver( $name );
         return $driver->insert( $table, $datas, $this->connection[$name] );
     }
     
     
-    public function getcount($table, $condition = null, $limit = '', $name = '') {
-        $driver =& $this->GetDriver($name);
-        return $driver->getcount($this->connection[$name], $table, $condition, $limit);
+    public function getCount($table, $condition = null, $limit = '', $name = '') {
+        $driver =& $this->getDriver($name);
+        return $driver->getCount($this->connection[$name], $table, $condition, $limit);
     }
     
     
     public function update( $table, $datas, $condition, $name = '' ) {
-        $driver =& $this->GetDriver( $name );
+        $driver =& $this->getDriver( $name );
         return $driver->update( $table, $datas, $condition, $this->connection[$name] );
     }
     
     
     public function del( $table, $condition, $name = '' ) {
-        $driver =& $this->GetDriver( $name );
+        $driver =& $this->getDriver( $name );
         return $driver->del( $table, $condition, $this->connection[$name] );
     }
     
     
-    public function CreateCondition( $field, $value, $name = '' ) {
-        $driver =& $this->GetDriver( $name );
-        return $driver->CreateCondition( $field, $value, $this->connection[$name] );
+    public function createCondition( $field, $value, $name = '' ) {
+        $driver =& $this->getDriver( $name );
+        return $driver->createCondition( $field, $value, $this->connection[$name] );
     }
     
     
     public function escape( $str, $name = '' ) {
-        $driver =& $this->GetDriver( $name );
+        $driver =& $this->getDriver( $name );
         return $driver->escape( $str );
     }
     
     
-    public function GetLastInsertId( $name = '' ) {
-        $driver =& $this->GetDriver( $name );
-        return $driver->GetLastInsertId();
+    public function getLastInsertId( $name = '' ) {
+        $driver =& $this->getDriver( $name );
+        return $driver->getLastInsertId();
     }
     
     
-    public function GetAffectedRows( $name = '' ) {
-        $driver =& $this->GetDriver( $name );
-        return $driver->GetAffectedRows();
+    public function getAffectedRows( $name = '' ) {
+        $driver =& $this->getDriver( $name );
+        return $driver->getAffectedRows();
     }
     
     
-    public function GetLastError( $name = '' ) {
-        $driver =& $this->GetDriver( $name );
-        return $driver->GetLastError();
+    public function getLastError( $name = '' ) {
+        $driver =& $this->getDriver( $name );
+        return $driver->getLastError();
     }
     
     
-    public function GetSqlLog() {
+    public function getSqlLog() {
         $logs = [];
         foreach( $this->driver as $name => $driver ) {
-            $logs[$name] = $driver->GetSqlLog();
+            $logs[$name] = $driver->getSqlLog();
         }
         return $logs;
     }
     
     
     public function describe($table, $name = '') {
-        $driver =& $this->GetDriver($name);
+        $driver =& $this->getDriver($name);
         return $driver->describe($this->connection[$name], $table);
     }
 }

@@ -34,7 +34,7 @@ class CDBCommon {
     }
     
     
-    public function GetFindQuery($connect, $query, $condition = null, $order = '', $limit = '', $group = '') {
+    public function getFindQuery($connect, $query, $condition = null, $order = '', $limit = '', $group = '') {
         if($condition) {
             $query .= ' WHERE ' . $this->parseCondition($condition, $connect);
         }
@@ -57,28 +57,28 @@ class CDBCommon {
         }
         $queries = array();
         foreach ($data as $field => $value) {
-            $queries[] = $this->CreateCondition($field, $value, $connect);
+            $queries[] = $this->createCondition($field, $value, $connect);
         }
         return join(' AND ', $queries);
     }
     
     
-    public function findquery( $connect, $query, $condition = '', $order = '', $limit = '', $group = '' ) {
-        $query = $this->GetFindQuery( $connect, $query, $condition, $order, $limit, $group );
+    public function findQuery( $connect, $query, $condition = '', $order = '', $limit = '', $group = '' ) {
+        $query = $this->getFindQuery( $connect, $query, $condition, $order, $limit, $group );
         return $this->find( $query, $connect );
     }
     
     
-    public function findall($connect, $table, $condition = null, $order = '', $limit = '', $group = '') {
+    public function findAll($connect, $table, $condition = null, $order = '', $limit = '', $group = '') {
         $query = "SELECT * FROM $table ";
-        $query = $this->GetFindQuery( $connect, $query, $condition, $order, $limit, $group);
+        $query = $this->getFindQuery( $connect, $query, $condition, $order, $limit, $group);
         return $this->find($query, $connect);
     }
     
     
-    public function getcount($connect, $table, $condition = null, $limit = '') {
+    public function getCount($connect, $table, $condition = null, $limit = '') {
         $query = "SELECT COUNT(*) FROM $table ";
-        $query = $this->GetFindQuery($connect, $query, $condition, "", $limit);
+        $query = $this->getFindQuery($connect, $query, $condition, "", $limit);
         $results = $this->find($query, $connect);
         //var_export($query);
         return $results[0]['COUNT(*)'];
@@ -115,7 +115,7 @@ class CDBCommon {
         $query = "UPDATE $table SET ";
         $i = 0;
         foreach ($data as $key => $value) {
-            $query .= $this->CreateCondition($key, $value, $connect);
+            $query .= $this->createCondition($key, $value, $connect);
             if ($i < $count - 1) {
                 $query .= ",";
             }
@@ -143,7 +143,7 @@ class CDBCommon {
         return $value;
     }
     
-    public function CreateCondition($field, $value, $connect) {
+    public function createCondition($field, $value, $connect) {
         return $this->field($field) . '=' . $this->value($value, $connect);
     }
     
@@ -153,17 +153,17 @@ class CDBCommon {
     }
     
     
-    public function GetLastInsertId() {
+    public function getLastInsertId() {
         return $this->last_insert_id;
     }
     
     
-    public function GetAffectedRows() {
+    public function getAffectedRows() {
         return $this->affected_rows;
     }
     
     
-    public function GetLastError() {
+    public function getLastError() {
         return $this->last_error;
     }
     
@@ -178,7 +178,7 @@ class CDBCommon {
     }
     
     
-    public function GetSqlLog() {
+    public function getSqlLog() {
         return $this->sqllog;
     }
     
