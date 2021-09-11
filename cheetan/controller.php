@@ -12,78 +12,13 @@ class CController {
     private $viewfile_ext = '.html';
     private $variables = [];
     private $db;
-    private $sanitize;
-    private $validate;
 
-    // Models Array
-    private $m = [];
-    
     // Components Array
-    private $c = [];
     private $post = [];
     private $get = [];
     private $request = [];
     private $data = [];
     private $debug = false;
-    
-    
-    public function addModel( $path, $name = '' ) {
-        $cname = basename( $path, '.php' );
-        $cname = strtolower( $cname );
-        if( !$name ) {
-            $name = $cname;
-        }
-        
-        $cname = 'C' . ucfirst( $name );
-        if( !file_exists( $path ) ) {
-            return false;
-
-        } else {
-            require_once( $path );
-            $class = new $cname();
-            if( !$class->table ) {
-                $class->table = $name;
-            }
-            
-            $class->setController( $this );
-            $this->m[$name]    = &$class;
-            if( empty( $this->{$name} ) ) {
-                $this->{$name} = &$this->m[$name];
-            }
-        }
-
-        return true;
-    }
-    
-    
-    public function addComponent( $path, $cname = '', $name = '' ) {
-
-        if( !$cname ) {
-            $cname = basename( $path, '.php' );
-            $cname = strtolower( $cname );
-            if( !$name ) {
-                $name = $cname;
-            }
-            $cname = 'C'.ucfirst( $name );
-
-        } else {
-            $name = basename( $path, '.php' );
-            $name = strtolower( $name );
-        }
-
-        if( !file_exists( $path ) ) {
-            print 'Component file $path is not exist.';
-            return false;
-        } else {
-            require_once( $path );
-            $class = new $cname();
-            $this->c[$name]  = $class;
-            if( empty( $this->{$name} ) ) {
-                $this->{$name} = &$this->c[$name];            
-            }
-        }
-        return true;
-    }
     
     
     public function setTemplateFile( $template ) {
@@ -115,8 +50,7 @@ class CController {
     
     
     public function getViewFile() {
-        if( $this->viewfile )
-        {
+        if( $this->viewfile ) {
             return $this->viewfile;
         }
         
@@ -148,15 +82,22 @@ class CController {
     }
     
     
-    public function set( $name, $value ) {
+    public function set( $name, $value, $sanitize=true) {
+        if ($sanitize) {
+            $value = $this->sanitize($value);
+        }
         $this->variables[$name] = $value;
     }
     
     
-    public function setArray( $datas ) {
+    public function setArray( $datas, $sanitize=true) {
         foreach( $datas as $key => $data ) {
-            $this->set( $key, $data );
+            $this->set( $key, $data, $sanitize );
         }
+    }
+
+    public function sanitize($data) {
+        return htmlspecialchars($data);
     }
 
 
@@ -207,17 +148,6 @@ class CController {
     public function setDatabase( &$db ) {
         $this->db = $db;
     }
-
-
-    public function setSanitize( &$sanitize ) {
-        $this->sanitize = $sanitize;
-    }
-
-
-    public function setValidate( &$validate ) {
-        $this->validate = $validate;
-    }
-    
     
     public function setDebug( $debug ) {
         $this->debug = $debug;

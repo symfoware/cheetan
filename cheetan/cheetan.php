@@ -12,12 +12,8 @@
 define( 'LIBDIR', dirname(__FILE__));
 
 require_once(LIBDIR . DIRECTORY_SEPARATOR . 'database.php');
-require_once(LIBDIR . DIRECTORY_SEPARATOR . 'sanitize.php');
-require_once(LIBDIR . DIRECTORY_SEPARATOR . 'validate.php');
 require_once(LIBDIR . DIRECTORY_SEPARATOR . 'controller.php');
 require_once(LIBDIR . DIRECTORY_SEPARATOR . 'view.php');
-require_once(LIBDIR . DIRECTORY_SEPARATOR . 'model.php');
-require_once(LIBDIR . DIRECTORY_SEPARATOR . 'dispatch.php');
 
 require_once(LIBDIR . DIRECTORY_SEPARATOR . 'db' . DIRECTORY_SEPARATOR . 'common.php');
 require_once(LIBDIR . DIRECTORY_SEPARATOR . 'db' . DIRECTORY_SEPARATOR . 'mysql.php');
@@ -36,14 +32,10 @@ class Cheetan {
             config_database( $db );
         }
     
-        $sanitize = new CSanitize();
-        $validate = new CValidate();
         $controller = new CController();
 
         $controller->requestHandle();
         $controller->setDatabase( $db );
-        $controller->setSanitize( $sanitize );
-        $controller->setValidate( $validate );
 
         if( !function_exists( 'is_session' ) || is_session() ) {
             session_start();
@@ -60,12 +52,11 @@ class Cheetan {
         $is_debug = $controller->getDebug();
         
         $view = new CView();
-        $view->setFile( $template, $viewfile );
-        $view->setVariable( $variable );
-        $view->setSanitize( $sanitize );
-        $view->setController( $controller );
-        $view->setDebug( $is_debug );
-        $view->setSqlLog( $sqllog );
+        $view
+            ->setFile( $template, $viewfile )
+            ->setVariable( $variable )
+            ->setController( $controller )
+            ->setSqlLog( $sqllog );
         $view->display();
 
         return $controller;
