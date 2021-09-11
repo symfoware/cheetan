@@ -1,8 +1,13 @@
 <?php
-/*-----------------------------------------------------------------------------
-cheetan is licensed under the MIT license.
-copyright (c) 2006 cheetan all right reserved.
-http://php.cheetan.net/
+/**----------------------------------------------------------------------------
+ * cheetan Web Framework.
+ * 
+ * The Lightweight PHP Web Framework to Accelerate Development.
+ *
+ * @version 0.9.0-dev
+ * @copyright Copyright 2006 cheetan all right reserved.
+ * @license https://opensource.org/licenses/MIT
+ * @link http://php.cheetan.net/
 -----------------------------------------------------------------------------*/
 class CView {
 
@@ -60,7 +65,7 @@ class CView {
         }
         $log    .= '</table>';
         $this->variables['cheetan_sql_log'] = $log;
-        
+
         return $this;
     }
 
