@@ -16,14 +16,19 @@ class CController {
     private $viewpath = null;
     private $viewfile_ext = '.html';
     private $variables = [];
+    private $debug = false;
+
     public $db = null;
 
-    // Components Array
-    private $post = [];
-    private $get = [];
-    private $request = [];
-    private $data = [];
-    private $debug = false;
+    // Request Data
+    public $method = 'GET';
+    public $post = [];
+    public $get = [];
+    public $request = [];
+    public $data = [];
+    public $json = [];
+    public $raw = null;
+    public $headers = [];
     
     
     public function setTemplateFile( $template ) {
@@ -116,6 +121,11 @@ class CController {
     
     
     public function requestHandle() {
+
+        $this->headers = getallheaders();
+        $this->raw = file_get_contents('php://input');
+        $this->method = $_SERVER['REQUEST_METHOD'];
+
         if( count( $_GET ) ) {
             $this->get = $_GET;
         }
@@ -125,8 +135,13 @@ class CController {
         if( count( $_REQUEST ) ) {
             $this->request = $_REQUEST;
         }
-        $this->modelItemHandle( $_GET );
-        $this->modelItemHandle( $_POST );
+        $this->modelItemHandle( $this->request );
+        
+        if (isset($this->headers['']) && ($this->headers[''] === '')) {
+            // application/json
+            $this->json = json_decode($this->raw, true);
+        }
+        
     }
     
     
@@ -149,20 +164,88 @@ class CController {
         return $this->db;
     }
     
-    
     public function setDatabase( &$db ) {
         $this->db = $db;
     }
-    
-    public function setDebug( $debug ) {
-        $this->debug = $debug;
+
+    // --------------------------------------------------------
+    // 表示関連
+    public function display() {
+        $this->setSqlLog();
+        if( $this->template ) {
+            $this->displayTemplate();
+        } else {
+            $this->content();
+        }
     }
     
+    public function content() {
+        $viewfile = $this->getViewFile();
+        if( file_exists( $viewfile )) {
+            $c = $this;
+            extract($this->variables, EXTR_SKIP);
+            require_once( $viewfile );
+        }
+    }
+    
+    private function displayTemplate() {
+        if( file_exists( $this->template ) ) {
+            $c = $this;
+            extract($this->variables, EXTR_SKIP);
+            require_once( $this->template );
+
+        } else {
+            print "Template '$this->template' is not exist.";
+        }
+    }
+
+    private function setSqlLog() {
+        if( !$this->getDebug() ) {
+            $this->variables['cheetan_sql_log'] = '';
+            return;
+        }
+
+        $sqllog = $this->db->GetSqlLog();
+
+        $log    = '<table class="cheetan_sql_log">'
+                . '<tr>'
+                . '<th width="60%">SQL</th>'
+                . '<th width="10%">ERROR</th>'
+                . '<th width="10%">ROWS</th>'
+                . '<th width="10%">TIME</th>'
+                . '</tr>'
+                ;
+        foreach( $sqllog as $name => $rows ) {
+            $log    .= '<tr>'
+                    . '<td colspan="4"><b>' . htmlspecialchars( $name ) . '</b></td>'
+                    . '</tr>'
+                    ;
+            foreach( $rows as $i => $row ) {
+                $log    .= '<tr>'
+                        . '<td>' . htmlspecialchars( $row['query'] ) . '</td>'
+                        . '<td>' . htmlspecialchars( $row['error'] ) . '</td>'
+                        . '<td>' . $row['affected_rows'] . '</td>'
+                        . '<td>' . sprintf( '%.5f', $row['query_time'] ) . '</td>'
+                        . '</tr>'
+                        ;
+            }
+        }
+        $log    .= '</table>';
+        $this->variables['cheetan_sql_log'] = $log;
+    }
+    
+    public function setDebug( $debug ) {
+        if ($debug) {
+            ini_set('display_errors', 'on');
+        } else {
+            ini_set('display_errors', 'off');
+        }
+        $this->debug = $debug;
+    }
     
     public function getDebug() {
         return $this->debug;
     }
-    
     
     public function getSqlLog() {
         return $this->db->GetSqlLog();

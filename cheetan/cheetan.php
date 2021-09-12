@@ -15,11 +15,6 @@ define( 'SCRIPTFILE', basename( $_SERVER['SCRIPT_FILENAME'] ) );
 
 require_once(LIBDIR . DIRECTORY_SEPARATOR . 'database.php');
 require_once(LIBDIR . DIRECTORY_SEPARATOR . 'controller.php');
-require_once(LIBDIR . DIRECTORY_SEPARATOR . 'view.php');
-
-//require_once(LIBDIR . DIRECTORY_SEPARATOR . 'db' . DIRECTORY_SEPARATOR . 'common.php');
-//require_once(LIBDIR . DIRECTORY_SEPARATOR . 'db' . DIRECTORY_SEPARATOR . 'mysql.php');
-//require_once(LIBDIR . DIRECTORY_SEPARATOR . 'db' . DIRECTORY_SEPARATOR . 'pgsql.php');
 
 class Cheetan {
 
@@ -54,20 +49,8 @@ class Cheetan {
         if( function_exists( 'action' ) ) {
             action( $controller );
         }
-        
-        $template = $controller->getTemplateFile();
-        $viewfile = $controller->getViewFile();
-        $variable = $controller->getVariable();
-        $sqllog = $controller->getSqlLog();
-        $is_debug = $controller->getDebug();
-        
-        $view = new CView();
-        $view
-            ->setFile( $template, $viewfile )
-            ->setVariable( $variable )
-            ->setController( $controller )
-            ->setSqlLog( $sqllog );
-        $view->display();
+
+        $controller->display();
 
         return $controller;
     }
@@ -77,6 +60,5 @@ class Cheetan {
 $cheetan = new Cheetan();
 isset($config) ? $cheetan->loadConfig($config) : $cheetan->loadConfig();
 $c = $cheetan->dispatch();
-//$data = $controller->getVariable();
 extract($c->getVariable());
 

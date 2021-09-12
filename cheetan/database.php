@@ -51,7 +51,7 @@ class CDatabase {
         $con = $this->connections[$target];
 
         if (empty($this->query)) {
-            $this->query = $this->buildQuery();
+            $this->query = $this->buildQuery($con);
         }
 
         $start = $this->getTime();
@@ -121,7 +121,33 @@ class CDatabase {
         return $this;
     }
 
-    private function buildQuery() {
+    public function insert($table) {
+        $this->condition['insert'] = $table;
+        return $this;
+    }
+
+    public function update($table) {
+        $this->condition['update'] = $table;
+        return $this;
+    }
+
+    public function delete($table) {
+        $this->condition['delete'] = $table;
+        return $this;
+    }
+
+    public function values($values) {
+        $this->condition['values'] = $values;
+        return $this;
+    }
+
+    public function unescape($field) {
+        return function() use ($field) {
+            return $field;
+        };
+    }
+
+    private function buildQuery($con) {
         $query = '';
         if (array_key_exists('select', $this->condition)) {
             $query .= 'SELECT ';
@@ -132,6 +158,31 @@ class CDatabase {
             }
         }
 
+        if (array_key_exists('insert', $this->condition)) {
+            $fields = [];
+            $values = [];
+            foreach($this->condition['values'] as $field => $value) {
+                $fields[] = $field;
+                $values[] = $this->getQuoteValue($value, $con);
+            }
+            $query .= 'INSERT INTO '.$this->condition['insert'];
+            $query .= ' ('.implode(',', $fields) . ')';
+            $query .= ' VALUES ('.implode(',', $values) . ')';
+        }
+
+        if (array_key_exists('update', $this->condition)) {
+            $set = [];
+            foreach($this->condition['values'] as $field => $value) {
+                $set[] = sprintf(' %s = %s', $field, $this->getQuoteValue($value, $con));
+            }
+            $query .= 'UPDATE '.$this->condition['update'];
+            $query .= ' SET '.implode(',', $set);
+        }
+
+        if (array_key_exists('delete', $this->condition)) {
+            $query .= 'DELETE FROM '.$this->condition['delete'];
+        }
+
         if (array_key_exists('from', $this->condition)) {
             $query .= ' FROM '.$this->condition['from'];
         }
@@ -139,7 +190,11 @@ class CDatabase {
         if (array_key_exists('where', $this->condition)) {
             $wheres = [];
             foreach($this->condition['where'] as $row) {
-                $wheres[] = sprintf(' %s %s %s', $row[0], $row[1], $row[2]);
+                if ($row[2] === null) {
+                    $wheres[] = sprintf(' %s IS NULL', $row[0]);
+                } else {
+                    $wheres[] = sprintf(' %s %s %s', $row[0], $row[1], $this->getQuoteValue($row[2], $con));
+                }
             }
             $query .= ' WHERE ' . implode(' AND ', $wheres);
 
@@ -157,6 +212,13 @@ class CDatabase {
 
         return $query;
 
+    }
+
+    private function getQuoteValue($value, $con) {
+        if (is_callable($value)) {
+            return $value();
+        }
+        return $con->quote($value);
     }
 
     private function getTime() {
