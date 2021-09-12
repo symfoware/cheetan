@@ -64,10 +64,10 @@ class CDatabase {
         
         $this->logs[$target][] = [
             'last_insert_id' => $con->lastInsertId() ,
-		    'affected_rows' => $res->rowCount(),
-		    'query' => $this->query,
+            'affected_rows' => $res->rowCount(),
+            'query' => $this->query,
             'error' => implode(',', $con->errorInfo()),
-		    'query_time' => $end - $start
+            'query_time' => $end - $start
         ];
 
         $this->query = '';
