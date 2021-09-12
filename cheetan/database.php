@@ -1,176 +1,234 @@
 <?php
-/*-----------------------------------------------------------------------------
-cheetan is licensed under the MIT license.
-copyright (c) 2006 cheetan all right reserved.
-http://php.cheetan.net/
+/**----------------------------------------------------------------------------
+ * cheetan Web Framework.
+ * 
+ * The Lightweight PHP Web Framework to Accelerate Development.
+ *
+ * @version 0.9.0-dev
+ * @copyright Copyright 2006 cheetan all right reserved.
+ * @license https://opensource.org/licenses/MIT
+ * @link http://php.cheetan.net/
 -----------------------------------------------------------------------------*/
-define( 'DBKIND_MYSQL', '0' );
-define( 'DBKIND_PGSQL', '1' );
-define( 'DBKIND_TEXTSQL', '2' );
-
 
 class CDatabase {
 
     private $config = [];
-    private $connection = [];
-    private $driver = [];
-    private $class = [
-        'CDBMysql',
-        'CDBPgsql',
-        'CDBTextsql',
-    ];
-    
-    
-    public function add( $name, $host, $user, $pswd, $db, $kind = 0, $port = 0 ) {
-        $config = [];
-        $config['host'] = $host;
-        $config['user'] = $user;
-        $config['pswd'] = $pswd;
-        $config['db'] = $db;
-        $config['kind'] = $kind;
-        $config['port'] = $port;
-        $this->config[$name] = $config;
+    private $query = '';
+    private $condition = [];
+    private $connections = [];
+    private $logs = [];
+
+    public function setConfig($config) {
+        if (!array_key_exists('database', $config)) {
+            return;
+        }
+        $this->config = $config['database'];
     }
-    
-    
-    public function &getDriver( $name ) {
-        if( empty( $this->config[$name] )) {
-            return null;
+
+    public function connect($config) {
+        $type = $config['type'];
+        $user = $config['user'];
+        $password = $config['password'];
+        unset($config['type'], $config['user'], $config['password']);
+
+        $constr = $type.':';
+        foreach($config as $key => $val) {
+            $constr .= sprintf('%s=%s;', $key, $val);
+        }
+        return new PDO($constr, $user, $password);
+    }
+
+    public function query($query) {
+        $this->query = $query;
+        return $this;
+    }
+
+    public function execute($target='default') {
+
+        if (!array_key_exists($target, $this->connections)) {
+            $this->connections[$target] = $this->connect($this->config[$target]);
+        }
+        $con = $this->connections[$target];
+
+        if (empty($this->query)) {
+            $this->query = $this->buildQuery($con);
         }
 
-        if( empty( $this->driver[$name] )) {
-            $this->driver[$name] = new $this->class[$this->config[$name]['kind']]();
-        }
+        $start = $this->getTime();
+        $res = $con->query($this->query);
+        $end = $this->getTime();
 
-        if( empty( $this->connection[$name] )) {
-            $this->connect( $name );
+        if (!array_key_exists($target, $this->logs)) {
+            $this->logs[$target] = [];
         }
         
-        return $this->driver[$name];
-    }
-    
-    
-    public function connect( $name ) {
-        $config = $this->config[$name];
-        $connect = $this->driver[$name]->connect( $config );
+        $this->logs[$target][] = [
+            'last_insert_id' => $con->lastInsertId() ,
+		    'affected_rows' => $res->rowCount(),
+		    'query' => $this->query,
+            'error' => implode(',', $con->errorInfo()),
+		    'query_time' => $end - $start
+        ];
 
-        if( !$connect ) {
-            print "Failed connect to $name.<br>";
-            return false;
+        $this->query = '';
+        if (!$res) {
+            return [];
         }
-        $this->connection[$name] = $connect;
-        return true;
+        return $res->fetchAll(PDO::FETCH_ASSOC );
+
     }
-    
-    
-    public function query( $query, $name = '' ) {
-        $driver    =& $this->getDriver( $name );
-        $ret    = $driver->query( $query, $this->connection[$name] );
-        if( !$ret )
-        {
-            print "[DBERR] $query<BR>";
+
+    public function select($fields='') {
+        if (!array_key_exists('select', $this->condition)) {
+            $this->condition['select'] = [];
         }
-        
-        return $ret;
+
+        if (empty($fields)) {
+            return $this;
+        }
+        if (is_array($fields)) {
+            $this->condition['select'] = array_merge($this->condition['select'], $fields);
+            return $this;
+        }
+        $this->condition['select'][] = $fields;
+        return $this;
     }
-    
-    
-    public function getFindQuery( $query, $condition = '', $order = '', $limit = '', $group = '' ) {
-        $driver =& $this->getDriver( $name );
-        return $driver->getFindQuery( $query, $condition, $order, $limit, $group );
+
+    public function from($from) {
+        $this->condition['from'] = $from;
+        return $this;
     }
-    
-    
-    public function findQuery( $query, $condition = '', $order = '', $limit = '', $group = '', $name = '' ) {
-        $driver =& $this->getDriver( $name );
-        return $driver->findQuery( $this->connection[$name], $query, $condition, $order, $limit, $group );
+
+    public function where($field, $operater, $value) {
+        if (!array_key_exists('where', $this->condition)) {
+            $this->condition['where'] = [];
+        }
+        $this->condition['where'][] = [$field, $operater, $value];
+        return $this;
     }
-    
-    
-    public function findAll($table, $condition = null, $order = '', $limit = '', $group = '', $name = '') {
-        $driver =& $this->getDriver( $name );
-        return $driver->findAll($this->connection[$name], $table, $condition, $order, $limit, $group);
+
+
+    public function order_by($order_by) {
+        if (!array_key_exists('order_by', $this->condition)) {
+            $this->condition['order_by'] = [];
+        }
+        $this->condition['order_by'][] = $order_by;
+        return $this;
     }
-    
-    
-    public function find( $query, $name = '' ) {
-        $driver =& $this->getDriver( $name );
-        return $driver->find( $query, $this->connection[$name] );
+
+    public function limit($limit) {
+        $this->condition['limit'] = $limit;
+        return $this;
     }
-    
-    
-    public function count( $query, $name = '' ) {
-        $driver =& $this->getDriver( $name );
-        return $driver->count( $query, $this->connection[$name] );
+
+    public function insert($table) {
+        $this->condition['insert'] = $table;
+        return $this;
     }
-    
-    
-    public function insert( $table, $datas, $name = '' )
-    {
-        $driver =& $this->getDriver( $name );
-        return $driver->insert( $table, $datas, $this->connection[$name] );
+
+    public function update($table) {
+        $this->condition['update'] = $table;
+        return $this;
     }
-    
-    
-    public function getCount($table, $condition = null, $limit = '', $name = '') {
-        $driver =& $this->getDriver($name);
-        return $driver->getCount($this->connection[$name], $table, $condition, $limit);
+
+    public function delete($table) {
+        $this->condition['delete'] = $table;
+        return $this;
     }
-    
-    
-    public function update( $table, $datas, $condition, $name = '' ) {
-        $driver =& $this->getDriver( $name );
-        return $driver->update( $table, $datas, $condition, $this->connection[$name] );
+
+    public function values($values) {
+        $this->condition['values'] = $values;
+        return $this;
     }
-    
-    
-    public function del( $table, $condition, $name = '' ) {
-        $driver =& $this->getDriver( $name );
-        return $driver->del( $table, $condition, $this->connection[$name] );
+
+    public function unescape($field) {
+        return function() use ($field) {
+            return $field;
+        };
     }
-    
-    
-    public function createCondition( $field, $value, $name = '' ) {
-        $driver =& $this->getDriver( $name );
-        return $driver->createCondition( $field, $value, $this->connection[$name] );
+
+    private function buildQuery($con) {
+        $query = '';
+        if (array_key_exists('select', $this->condition)) {
+            $query .= 'SELECT ';
+            if (empty($this->condition['select'])) {
+                $query .= '*';
+            } else {
+                $query .= implode(',', $this->condition['select']);
+            }
+        }
+
+        if (array_key_exists('insert', $this->condition)) {
+            $fields = [];
+            $values = [];
+            foreach($this->condition['values'] as $field => $value) {
+                $fields[] = $field;
+                $values[] = $this->getQuoteValue($value, $con);
+            }
+            $query .= 'INSERT INTO '.$this->condition['insert'];
+            $query .= ' ('.implode(',', $fields) . ')';
+            $query .= ' VALUES ('.implode(',', $values) . ')';
+        }
+
+        if (array_key_exists('update', $this->condition)) {
+            $set = [];
+            foreach($this->condition['values'] as $field => $value) {
+                $set[] = sprintf(' %s = %s', $field, $this->getQuoteValue($value, $con));
+            }
+            $query .= 'UPDATE '.$this->condition['update'];
+            $query .= ' SET '.implode(',', $set);
+        }
+
+        if (array_key_exists('delete', $this->condition)) {
+            $query .= 'DELETE FROM '.$this->condition['delete'];
+        }
+
+        if (array_key_exists('from', $this->condition)) {
+            $query .= ' FROM '.$this->condition['from'];
+        }
+
+        if (array_key_exists('where', $this->condition)) {
+            $wheres = [];
+            foreach($this->condition['where'] as $row) {
+                if ($row[2] === null) {
+                    $wheres[] = sprintf(' %s IS NULL', $row[0]);
+                } else {
+                    $wheres[] = sprintf(' %s %s %s', $row[0], $row[1], $this->getQuoteValue($row[2], $con));
+                }
+            }
+            $query .= ' WHERE ' . implode(' AND ', $wheres);
+
+        }
+
+        if (array_key_exists('order_by', $this->condition)) {
+            $query .= ' ORDER BY ' . implode(' , ', $this->condition['order_by']);
+        }
+
+        if (array_key_exists('limit', $this->condition)) {
+            $query .= ' LIMIT ' . $this->condition['limit'];
+        }
+
+        $this->condition = [];
+
+        return $query;
+
     }
-    
-    
-    public function escape( $str, $name = '' ) {
-        $driver =& $this->getDriver( $name );
-        return $driver->escape( $str );
+
+    private function getQuoteValue($value, $con) {
+        if (is_callable($value)) {
+            return $value();
+        }
+        return $con->quote($value);
     }
-    
-    
-    public function getLastInsertId( $name = '' ) {
-        $driver =& $this->getDriver( $name );
-        return $driver->getLastInsertId();
+
+    private function getTime() {
+        list($usec, $sec) = explode( ' ', microtime() ); 
+        return (float)$sec + (float)$usec;
     }
-    
-    
-    public function getAffectedRows( $name = '' ) {
-        $driver =& $this->getDriver( $name );
-        return $driver->getAffectedRows();
-    }
-    
-    
-    public function getLastError( $name = '' ) {
-        $driver =& $this->getDriver( $name );
-        return $driver->getLastError();
-    }
-    
-    
+
+
     public function getSqlLog() {
-        $logs = [];
-        foreach( $this->driver as $name => $driver ) {
-            $logs[$name] = $driver->getSqlLog();
-        }
-        return $logs;
+        return $this->logs;
     }
-    
-    
-    public function describe($table, $name = '') {
-        $driver =& $this->getDriver($name);
-        return $driver->describe($this->connection[$name], $table);
-    }
+
 }
