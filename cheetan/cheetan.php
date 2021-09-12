@@ -31,23 +31,22 @@ class Cheetan {
             }
             $this->config = array_merge($this->config, require($file));
         }
-        if ($config) {
-            $this->config = array_merge($this->config, $config);
-        }
-        
     }
 
     public function dispatch() {
 
-        $db = new CDatabase();
-        $db->setConfig($this->config);
-
         $controller = new CController();
+        $controller->setDatabase(new CDatabase());
+        $controller->setConfig($this->config);
         $controller->requestHandle();
-        $controller->setDatabase( $db );
 
-        if( function_exists( 'action' ) ) {
+        if (function_exists('action')) {
             action( $controller );
+        }
+
+        $func = 'action_'.$controller->method;
+        if (function_exists($func)) {
+            $func( $controller );
         }
 
         $controller->display();
