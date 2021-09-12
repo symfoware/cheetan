@@ -26,7 +26,6 @@ class CController {
     public $get = [];
     public $request = [];
     public $data = [];
-    public $json = [];
     public $raw = null;
     public $headers = [];
     
@@ -44,7 +43,6 @@ class CController {
     public function setViewPath( $viewpath ) {
         $this->viewpath = $viewpath;
     }
-    
     
     public function setViewExt( $ext ) {
         if( $ext[0] != '.' ) {
@@ -137,11 +135,6 @@ class CController {
         }
         $this->modelItemHandle( $this->request );
         
-        if (isset($this->headers['']) && ($this->headers[''] === '')) {
-            // application/json
-            $this->json = json_decode($this->raw, true);
-        }
-        
     }
     
     
@@ -199,6 +192,12 @@ class CController {
         }
     }
 
+    public function sendJson($json) {
+        header('Content-Type: application/json; charset=utf-8');
+        echo json_encode($json);
+        exit();
+    }
+
     private function setSqlLog() {
         if( !$this->getDebug() ) {
             $this->variables['cheetan_sql_log'] = '';
@@ -206,31 +205,20 @@ class CController {
         }
 
         $sqllog = $this->db->GetSqlLog();
-
-        $log    = '<table class="cheetan_sql_log">'
-                . '<tr>'
-                . '<th width="60%">SQL</th>'
-                . '<th width="10%">ERROR</th>'
-                . '<th width="10%">ROWS</th>'
-                . '<th width="10%">TIME</th>'
-                . '</tr>'
-                ;
+        $log = '<table class="cheetan_sql_log">';
+        $log .= '<tr><th width="60%">SQL</th><th width="10%">ERROR</th><th width="10%">ROWS</th><th width="10%">TIME</th></tr>';
         foreach( $sqllog as $name => $rows ) {
-            $log    .= '<tr>'
-                    . '<td colspan="4"><b>' . htmlspecialchars( $name ) . '</b></td>'
-                    . '</tr>'
-                    ;
-            foreach( $rows as $i => $row ) {
-                $log    .= '<tr>'
-                        . '<td>' . htmlspecialchars( $row['query'] ) . '</td>'
-                        . '<td>' . htmlspecialchars( $row['error'] ) . '</td>'
-                        . '<td>' . $row['affected_rows'] . '</td>'
-                        . '<td>' . sprintf( '%.5f', $row['query_time'] ) . '</td>'
-                        . '</tr>'
-                        ;
+            $log .= sprintf('<tr><td colspan="4"><b>%s</b></td></tr>', $this->sanitize($name));
+            foreach( $rows as $row ) {
+                $log .= sprintf('<tr><td>%s</td><td>%s</td><td>%d</td><td>%.5f</td></tr>',
+                    $this->sanitize($row['query']),
+                    $this->sanitize($row['error']),
+                    $row['affected_rows'],
+                    $row['query_time']
+                );
             }
         }
-        $log    .= '</table>';
+        $log .= '</table>';
         $this->variables['cheetan_sql_log'] = $log;
     }
     
