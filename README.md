@@ -25,12 +25,41 @@ Python製のフレームワーク[Bottle](https://bottlepy.org/docs/dev/)のよ�
 オリジナルの思想は受け継ぎつつ、下位互換のない変更を加えていきます。
 
 - 最小構成(可能であれば1ファイル)にしたい chetan.phpのみが目標
--  configは関数ではなくarray形式の設定ファイルに変更
--  テストの追加
+- サンプルプログラムの追加
+- テストの追加
+
+# バージョン0.9系で対応
+
+- configは関数ではなくarray形式の設定ファイルに変更
 - バージョン表記を3桁に変更
 - 関数名を正規(camelCaseに統一)
 - データベースアクセスはPDOのみに一本化
 - textsqlの廃止
-- sqlite3の正式サポート追加
 - jsonのサポート
+- sqlite3の正式サポート追加
+- Postgresの動作確認
+- SQLiteの動作確認
+
+
+# 各種PDOのDSN名とインストール
+
+#### MySQL
+
+DSN名は「mysql」
+
+`$ sudo apt install php-mysql`
+
+
+#### PostgreSQL
+
+DSN名は「pgsql」
+
+`$ sudo apt install php-pgsql`
+
+
+#### SQLite3
+
+DSN名は「sqlite」
+
+`$ sudo apt install php-sqlite3`
 

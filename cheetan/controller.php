@@ -18,6 +18,7 @@ class CController {
     private $variables = [];
     private $debug = false;
 
+    public $config = [];
     public $db = null;
 
     // Request Data
@@ -88,20 +89,63 @@ class CController {
         }
         return $path;
     }
-    
-    
-    public function set( $name, $value, $sanitize=true) {
-        if ($sanitize) {
-            $value = $this->sanitize($value);
+
+    public function setConfig($config) {
+        $this->config = array_merge($this->config, $config);
+        if ($this->db) {
+            $this->db->setConfig($config);
         }
-        $this->variables[$name] = $value;
+    }
+
+    public function getVariable() {
+        return $this->variables;
+    }
+    
+    public function getDatabase() {
+        return $this->db;
+    }
+    
+    public function setDatabase( $db ) {
+        $this->db = $db;
+    }
+    
+    /**
+     * テンプレートに値を設定
+     * set('key', 'value', true | false [sanitize option, default true])
+     * set(['key' => 'value'], true | false [sanitize option, default true])
+    */
+    public function set($data, ...$args) {
+        $sanitize = true;
+        if (is_array($data)) {
+            if (count($args)) {
+                $sanitize = $args[0];
+            }
+        } else {
+            $data = [$data => $args[0]];
+            if (count($args) == 2) {
+                $sanitize = $args[1];
+            }
+        }
+
+        foreach($data as $key => $value) {
+            $this->variables[$key] = $this->parseSetValue($value, $sanitize);
+        }
     }
     
     
-    public function setArray( $datas, $sanitize=true) {
-        foreach( $datas as $key => $data ) {
-            $this->set( $key, $data, $sanitize );
+    private function parseSetValue( $data, $sanitize) {
+        if (is_array($data)) {
+            $result = [];
+            foreach($data as $key => $value) {
+                $result[$key] = $this->parseSetValue($value, $sanitize);
+            }
+            return $result;
         }
+        
+        if ($sanitize) {
+            $data = $this->sanitize($data);
+        }
+        return $data;
     }
 
     public function sanitize($data) {
@@ -145,20 +189,6 @@ class CController {
                 $this->data[$model][$element] = $request;
             }
         }
-    }
-    
-    
-    public function getVariable() {
-        return $this->variables;
-    }
-    
-    
-    public function getDatabase() {
-        return $this->db;
-    }
-    
-    public function setDatabase( &$db ) {
-        $this->db = $db;
     }
 
     // --------------------------------------------------------
@@ -223,11 +253,7 @@ class CController {
     }
     
     public function setDebug( $debug ) {
-        if ($debug) {
-            ini_set('display_errors', 'on');
-        } else {
-            ini_set('display_errors', 'off');
-        }
+        ini_set('display_errors', $debug);
         $this->debug = $debug;
     }
     

@@ -22,16 +22,23 @@ class CDatabase {
         if (!array_key_exists('database', $config)) {
             return;
         }
-        $this->config = $config['database'];
+        $this->config = array_merge($this->config, $config['database']);
     }
 
     public function connect($config) {
         $type = $config['type'];
-        $user = $config['user'];
-        $password = $config['password'];
+        $user = $config['user'] ?? null;
+        $password = $config['password'] ?? null;
         unset($config['type'], $config['user'], $config['password']);
 
         $constr = $type.':';
+        switch($type) {
+            case 'sqlite':
+                $constr .= $config['dbname'];
+                unset($config['dbname']);
+            break;
+        }
+
         foreach($config as $key => $val) {
             $constr .= sprintf('%s=%s;', $key, $val);
         }
@@ -63,11 +70,11 @@ class CDatabase {
         }
         
         $this->logs[$target][] = [
-            'last_insert_id' => $con->lastInsertId() ,
-		    'affected_rows' => $res->rowCount(),
-		    'query' => $this->query,
+            //'last_insert_id' => $con->lastInsertId() ,
+            'affected_rows' => $res->rowCount(),
+            'query' => $this->query,
             'error' => implode(',', $con->errorInfo()),
-		    'query_time' => $end - $start
+            'query_time' => $end - $start
         ];
 
         $this->query = '';
@@ -99,10 +106,20 @@ class CDatabase {
         return $this;
     }
 
-    public function where($field, $operater, $value) {
+    public function where(...$args) {
         if (!array_key_exists('where', $this->condition)) {
             $this->condition['where'] = [];
         }
+
+        $field = $args[0];
+        if (count($args) == 2) {
+            $operater = '=';
+            $value = $args[1];
+        } else {
+            $operater = $args[1];
+            $value = $args[2];
+        }
+
         $this->condition['where'][] = [$field, $operater, $value];
         return $this;
     }
@@ -190,10 +207,15 @@ class CDatabase {
         if (array_key_exists('where', $this->condition)) {
             $wheres = [];
             foreach($this->condition['where'] as $row) {
-                if ($row[2] === null) {
+                if ($row[2] !== null) {
+                    $wheres[] = sprintf(' %s %s %s', $row[0], $row[1], $this->getQuoteValue($row[2], $con));
+                    continue;
+                }
+                // [IS NULL] or [IS NOT NULL]
+                if ($row[1] == '=') {
                     $wheres[] = sprintf(' %s IS NULL', $row[0]);
                 } else {
-                    $wheres[] = sprintf(' %s %s %s', $row[0], $row[1], $this->getQuoteValue($row[2], $con));
+                    $wheres[] = sprintf(' %s IS NOT NULL', $row[0]);
                 }
             }
             $query .= ' WHERE ' . implode(' AND ', $wheres);
