@@ -101,9 +101,8 @@ class CDatabase {
         return $this;
     }
 
-    public function from($from) {
-        $this->condition['from'] = $from;
-        return $this;
+    public function from($table) {
+        return $this->setCondition('from', $table);
     }
 
     public function where(...$args) {
@@ -134,27 +133,27 @@ class CDatabase {
     }
 
     public function limit($limit) {
-        $this->condition['limit'] = $limit;
-        return $this;
+        return $this->setCondition('limit', $limit);
     }
 
     public function insert($table) {
-        $this->condition['insert'] = $table;
-        return $this;
+        return $this->setCondition('insert', $table);
     }
 
     public function update($table) {
-        $this->condition['update'] = $table;
-        return $this;
+        return $this->setCondition('update', $table);
     }
 
     public function delete($table) {
-        $this->condition['delete'] = $table;
-        return $this;
+        return $this->setCondition('delete', $table);
     }
 
     public function values($values) {
-        $this->condition['values'] = $values;
+        return $this->setCondition('values', $values);
+    }
+
+    private function setCondition($key, $value) {
+        $this->condition[$key] = $value;
         return $this;
     }
 
@@ -247,7 +246,6 @@ class CDatabase {
         list($usec, $sec) = explode( ' ', microtime() ); 
         return (float)$sec + (float)$usec;
     }
-
 
     public function getSqlLog() {
         return $this->logs;

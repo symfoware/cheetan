@@ -26,20 +26,16 @@ class CController {
     public $post = [];
     public $get = [];
     public $request = [];
-    public $data = [];
     public $raw = null;
     public $headers = [];
-    
     
     public function setTemplateFile( $template ) {
         $this->template = $template;
     }
     
-    
     public function setViewFile( $viewfile ) {
         $this->viewfile = $viewfile;
     }
-    
     
     public function setViewPath( $viewpath ) {
         $this->viewpath = $viewpath;
@@ -52,40 +48,30 @@ class CController {
         $this->viewfile_ext = $ext;
     }
     
-    
     public function getTemplateFile() {
         return $this->template;
     }
     
-    
     public function getViewFile() {
-        if( $this->viewfile ) {
+        if ( $this->viewfile ) {
             return $this->viewfile;
         }
         
-        $pos = strpos( SCRIPTFILE, '.' );
-        if( $pos === false ) {
-            return SCRIPTFILE . $this->viewfile_ext;
-        }
-        if( !$pos ) {
-            return $this->viewfile_ext;
-        }
-        
         list( $title, $ext ) = explode( '.', SCRIPTFILE );
-        if( $this->viewpath ) {
-            $path    = $this->viewpath;
-            switch( $this->viewpath[strlen($this->viewpath)-1] ) {
-            case '/';
-            case "\\";
-                $path    = $this->viewpath . $title . $this->viewfile_ext;
+        if ( $this->viewpath ) {
+            $path = $this->viewpath;
+            switch ( $this->viewpath[strlen($this->viewpath)-1] ) {
+                case '/';
+                case "\\";
+                    $path = $this->viewpath . $title . $this->viewfile_ext;
                 break;
-            default:
-                $path    = $this->viewpath . DIRECTORY_SEPARATOR . $title . $this->viewfile_ext;
+                default:
+                    $path = $this->viewpath . DIRECTORY_SEPARATOR . $title . $this->viewfile_ext;
                 break;
             }
 
         } else {
-            $path    = $title . $this->viewfile_ext;
+            $path = $title . $this->viewfile_ext;
         }
         return $path;
     }
@@ -99,14 +85,6 @@ class CController {
 
     public function getVariable() {
         return $this->variables;
-    }
-    
-    public function getDatabase() {
-        return $this->db;
-    }
-    
-    public function setDatabase( $db ) {
-        $this->db = $db;
     }
     
     /**
@@ -132,7 +110,6 @@ class CController {
         }
     }
     
-    
     private function parseSetValue( $data, $sanitize) {
         if (is_array($data)) {
             $result = [];
@@ -152,50 +129,29 @@ class CController {
         return htmlspecialchars($data);
     }
 
-
     public function redirect( $url, $is301 = false ) {
-        if( $is301 ) {
+        if ( $is301 ) {
             header( 'HTTP/1.1 301 Moved Permanently' );
         }
         header( 'Location: ' . $url );
         exit();
     }
     
-    
     public function requestHandle() {
-
         $this->headers = getallheaders();
         $this->raw = file_get_contents('php://input');
         $this->method = $_SERVER['REQUEST_METHOD'];
 
-        if( count( $_GET ) ) {
-            $this->get = $_GET;
-        }
-        if( count( $_POST ) ) {
-            $this->post = $_POST;
-        }
-        if( count( $_REQUEST ) ) {
-            $this->request = $_REQUEST;
-        }
-        $this->modelItemHandle( $this->request );
-        
-    }
-    
-    
-    public function modelItemHandle( $requests ) {
-        foreach( $requests as $key => $request ) {
-            if( strpos( $key, '/' ) !== false ) {
-                list( $model, $element ) = explode( '/', $key );
-                $this->data[$model][$element] = $request;
-            }
-        }
+        $this->get = $_GET;
+        $this->post = $_POST;
+        $this->request = $_REQUEST;
     }
 
     // --------------------------------------------------------
     // 表示関連
     public function display() {
         $this->setSqlLog();
-        if( $this->template ) {
+        if ( $this->template ) {
             $this->displayTemplate();
         } else {
             $this->content();
@@ -204,7 +160,7 @@ class CController {
     
     public function content() {
         $viewfile = $this->getViewFile();
-        if( file_exists( $viewfile )) {
+        if ( file_exists( $viewfile )) {
             $c = $this;
             extract($this->variables, EXTR_SKIP);
             require_once( $viewfile );
@@ -212,7 +168,7 @@ class CController {
     }
     
     private function displayTemplate() {
-        if( file_exists( $this->template ) ) {
+        if ( file_exists( $this->template ) ) {
             $c = $this;
             extract($this->variables, EXTR_SKIP);
             require_once( $this->template );
@@ -229,7 +185,7 @@ class CController {
     }
 
     private function setSqlLog() {
-        if( !$this->getDebug() ) {
+        if ( !$this->getDebug() ) {
             $this->variables['cheetan_sql_log'] = '';
             return;
         }
@@ -259,9 +215,5 @@ class CController {
     
     public function getDebug() {
         return $this->debug;
-    }
-    
-    public function getSqlLog() {
-        return $this->db->GetSqlLog();
     }
 }

@@ -16,11 +16,21 @@ define( 'SCRIPTFILE', basename( $_SERVER['SCRIPT_FILENAME'] ) );
 require_once(LIBDIR . DIRECTORY_SEPARATOR . 'database.php');
 require_once(LIBDIR . DIRECTORY_SEPARATOR . 'controller.php');
 
+
+
+
+
+
+
+
+// ----------------------------------------------------------------------------
 class Cheetan {
 
     private $config = [];
 
-    public function loadConfig($config=null) {
+    public function loadConfig() {
+        // cheetan.phpと同じ階層のconfig.php
+        // 実行スクリプトと同じ階層のconfig.phpを読み取り設定
         $files = [
             LIBDIR . DIRECTORY_SEPARATOR . 'config.php',
             'config.php',
@@ -36,15 +46,17 @@ class Cheetan {
     public function dispatch() {
 
         $controller = new CController();
-        $controller->setDatabase(new CDatabase());
+        $controller->db = new CDatabase();
         $controller->setConfig($this->config);
         $controller->requestHandle();
 
+        // 呼び出し元のaction関数実行
         if (function_exists('action')) {
             action( $controller );
         }
 
-        $func = 'action_'.$controller->method;
+        // 呼び出し元にaction_[method]が存在すれば実行
+        $func = 'action_'.strtolower($controller->method);
         if (function_exists($func)) {
             $func( $controller );
         }
@@ -57,7 +69,7 @@ class Cheetan {
 
 
 $cheetan = new Cheetan();
-isset($config) ? $cheetan->loadConfig($config) : $cheetan->loadConfig();
+$cheetan->loadConfig();
 $c = $cheetan->dispatch();
 extract($c->getVariable());
 
