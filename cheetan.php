@@ -316,6 +316,13 @@ class Cheetan {
 
     public function setConfig($config) {
         $this->config = array_merge($this->config, $config);
+        foreach(['template', 'viewfile', 'viewpath'] as $key) {
+            if (!array_key_exists($key, $this->config)) {
+                continue;
+            }
+            $this->{$key} = $this->config[$key];
+        }
+
         if ($this->db) {
             $this->db->setConfig($config);
         }
