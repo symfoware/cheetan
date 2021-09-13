@@ -22,9 +22,7 @@
 Python製のフレームワーク[Bottle](https://bottlepy.org/docs/dev/)のような、簡単にサンプルが作成できるフレームワークとしたい。
 
 # 方針
-オリジナルの思想は受け継ぎつつ、下位互換のない変更を加えていきます。
 
-- 最小構成(可能であれば1ファイル)にしたい chetan.phpのみが目標
 - サンプルプログラムの追加
 - テストの追加
 
@@ -39,6 +37,7 @@ Python製のフレームワーク[Bottle](https://bottlepy.org/docs/dev/)のよ�
 - sqlite3の正式サポート追加
 - Postgresの動作確認
 - SQLiteの動作確認
+- chetan.phpのみで動作するよう変更
 
 
 # 各種PDOのDSN名とインストール
