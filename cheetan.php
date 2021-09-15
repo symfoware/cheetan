@@ -316,7 +316,7 @@ class Cheetan {
 
     public function setConfig($config) {
         $this->config = array_merge($this->config, $config);
-        foreach(['template', 'viewfile', 'viewpath'] as $key) {
+        foreach(['template', 'viewfile', 'viewpath', 'viewfile_ext'] as $key) {
             if (!array_key_exists($key, $this->config)) {
                 continue;
             }
@@ -326,25 +326,6 @@ class Cheetan {
         if ($this->db) {
             $this->db->setConfig($config);
         }
-    }
-
-    public function setTemplateFile( $template ) {
-        $this->template = $template;
-    }
-    
-    public function setViewFile( $viewfile ) {
-        $this->viewfile = $viewfile;
-    }
-    
-    public function setViewPath( $viewpath ) {
-        $this->viewpath = $viewpath;
-    }
-    
-    public function setViewExt( $ext ) {
-        if( $ext[0] != '.' ) {
-            $ext = '.' . $ext;
-        }
-        $this->viewfile_ext = $ext;
     }
     
     public function getViewFile() {
@@ -418,14 +399,6 @@ class Cheetan {
         return htmlspecialchars($data);
     }
 
-    public function redirect( $url, $is301 = false ) {
-        if ( $is301 ) {
-            header( 'HTTP/1.1 301 Moved Permanently' );
-        }
-        header( 'Location: ' . $url );
-        exit();
-    }
-
     public function sendJson($json) {
         header('Content-Type: application/json; charset=utf-8');
         echo json_encode($json);
@@ -433,19 +406,20 @@ class Cheetan {
     }
     
     public function requestHandle() {
-        $this->headers = getallheaders();
-        $this->raw = file_get_contents('php://input');
         $this->method = $_SERVER['REQUEST_METHOD'];
 
+
+        $this->headers = getallheaders();
+        $this->raw = file_get_contents('php://input');
         $this->get = $_GET;
         $this->post = $_POST;
-        $this->request = $_REQUEST;
+        
     }
 
     // --------------------------------------------------------
     // 表示関連
     public function display() {
-        $this->setSqlLog();
+        $this->makeSqlLog();
         if ( $this->template ) {
             $this->displayTemplate();
         } else {
@@ -473,7 +447,7 @@ class Cheetan {
         }
     }
 
-    private function setSqlLog() {
+    private function makeSqlLog() {
         if ( !$this->getDebug() ) {
             $this->variables['cheetan_sql_log'] = '';
             return;
