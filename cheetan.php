@@ -271,11 +271,7 @@ class Cheetan {
 
     // Request Data
     public $method = 'GET';
-    public $post = [];
-    public $get = [];
     public $request = [];
-    public $raw = null;
-    public $headers = [];
 
     public function dispatch() {
 
@@ -407,13 +403,35 @@ class Cheetan {
     
     public function requestHandle() {
         $this->method = $_SERVER['REQUEST_METHOD'];
+        $this->request = [
+            'headers' => getallheaders(),
+            'raw' => file_get_contents('php://input'),
+            'get' => $_GET,
+            'post' => $_POST
+        ];
+    }
 
+    public function header($key, $default='') {
+        return $this->arrayValue($this->request['headers'], $key, $default);
+    }
 
-        $this->headers = getallheaders();
-        $this->raw = file_get_contents('php://input');
-        $this->get = $_GET;
-        $this->post = $_POST;
-        
+    public function raw() {
+        return $this->request['raw'];
+    }
+
+    public function get($key, $default='') {
+        return $this->arrayValue($this->request['get'], $key, $default);
+    }
+
+    public function post($key, $default='') {
+        return $this->arrayValue($this->request['post'], $key, $default);
+    }
+
+    public function arrayValue($ary, $key, $default='') {
+        if (!array_key_exists($key, $ary)) {
+            return $default;
+        }
+        return $ary[$key];
     }
 
     // --------------------------------------------------------
