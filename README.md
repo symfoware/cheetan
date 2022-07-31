@@ -37,7 +37,7 @@ Python製のフレームワーク[Bottle](https://bottlepy.org/docs/dev/)のよ�
 - sqlite3の正式サポート追加
 - Postgresの動作確認
 - SQLiteの動作確認
-- chetan.phpのみで動作するよう変更
+- chetan.php 1ファイルのみで動作するよう変更
 
 
 # 各種PDOのDSN名とインストール

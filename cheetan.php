@@ -372,7 +372,7 @@ class Cheetan {
         }
 
         foreach($data as $key => $value) {
-            $this->variables[$key] = $this->parseSetValue($value, $sanitize);
+            $this->variables['data'][$key] = $this->parseSetValue($value, $sanitize);
         }
     }
     
